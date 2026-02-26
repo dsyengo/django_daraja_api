@@ -22,7 +22,8 @@ class InitiateSTKPushView(APIView):
         
         # IN DEV: Use your Ngrok URL
         # IN PROD: Use your live domain
-        base_url = config("BASE_URL").rstrip("/")
+        base_url = config("BASE_URL")
+        # .rstrip("/")
         callback_url = f"{base_url}/api/callback/"
         
         logger.info(f"Initiating STK Push for {phone_number} amount: KES {amount}")

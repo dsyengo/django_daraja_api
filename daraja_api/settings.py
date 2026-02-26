@@ -113,7 +113,7 @@ REST_FRAMEWORK = {
 MPESA_ENVIRONMENT = config('MPESA_ENVIRONMENT')
 MPESA_CONSUMER_KEY = config('MPESA_CONSUMER_KEY')
 MPESA_CONSUMER_SECRET = config('MPESA_CONSUMER_SECRET')
-MPESA_EXPRESS_SHORTCODE = config('MPESA_SHORTCODE')
+MPESA_EXPRESS_SHORTCODE = config('MPESA_EXPRESS_SHORTCODE')
 MPESA_PASSKEY = config('MPESA_PASSKEY')
 MPESA_INITIATOR_USERNAME = config('MPESA_INITIATOR_USERNAME')
 
@@ -156,31 +156,61 @@ STATIC_URL = 'static/'
 
 
 
+import logging
+from colorama import Fore, Style, init
+
+# Initialize Colorama for Windows/Linux compatibility
+init(autoreset=True)
+
+class ColoramaFormatter(logging.Formatter):
+    """Custom formatter to add color to log levels."""
+    COLORS = {
+        'DEBUG': Fore.CYAN,
+        'INFO': Fore.GREEN,
+        'WARNING': Fore.YELLOW,
+        'ERROR': Fore.RED,
+        'CRITICAL': Fore.RED + Style.BRIGHT,
+    }
+
+    def format(self, record):
+        # Get the color for the level, default to empty string if not found
+        color = self.COLORS.get(record.levelname, '')
+        # Wrap the levelname in color and reset it afterward
+        record.levelname = f"{color}{record.levelname}{Style.RESET_ALL}"
+        return super().format(record)
+
+
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'formatters': {
-        'verbose': {
+        'colorama_verbose': {
+            # Pass the class directly since it's defined in this file
+            '()': ColoramaFormatter, 
             'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
             'style': '{',
         },
     },
     'handlers': {
         'console': {
-            'level': 'INFO', # captures INFO, WARNING, ERROR, CRITICAL
+            'level': 'INFO',
             'class': 'logging.StreamHandler',
-            'formatter': 'verbose',
+            'formatter': 'colorama_verbose',
         },
     },
     'loggers': {
-        'mpesa_api': {  # This must match your app name
+        'mpesa_api': {
             'handlers': ['console'],
             'level': 'INFO',
             'propagate': True,
         },
+        # Optional: Add Django logs to see everything in color
+        'django': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        },
     },
 }
+
